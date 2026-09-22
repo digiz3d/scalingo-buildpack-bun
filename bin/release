@@ -4,5 +4,5 @@ cat << EOF
 ---
 addons: []
 default_process_types:
-  web: bun start
+  web: /app/bin/bun start
 EOF
