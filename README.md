@@ -1,45 +1,34 @@
-# heroku-buildpack-bun
+# Scalingo Buildpack for Bun
 
-Heroku buildpack for [Bun.js](https://bun.sh/) - allows you to run Bun on Heroku.
+Installs a pinned Bun runtime and builds Bun applications on Scalingo.
 
-Largely copied from the [Deno buildpack](https://github.com/chibat/heroku-buildpack-deno) and [Node.js buildpack](https://github.com/heroku/heroku-buildpack-nodejs).
+## Usage
 
-## How to use
+Set the following environment variable on the Scalingo application:
 
-To add the buildpack to your Heroku app, visit the settings page for your app on Heroku, then under 'Buildpacks' add the URL `https://github.com/jakeg/heroku-buildpack-bun`.
-
-You'll either need a [`Procfile`](https://devcenter.heroku.com/articles/procfile) in the root folder of your app (with eg `web: bun index.js` in it), or a `package.json` with a start script listed.
-
-Pin a certain Bun version such as `v1.1.20` with the `BUN_VERSION` environment variable (eg under 'Config Vars' on your app's Heroku settings page), or with a `.bun-version`, `runtime.bun.txt` or `runtime.txt` containing a single line for the pinned version. The version can be specified with or without a leading `v` eg `v1.0.7` or `1.0.7` or [any other Bun tags](https://github.com/oven-sh/bun/tags).
-
-## Support scripts
-
-This buildpack automatically runs the following bun commands and scripts if defined in `package.json`.
-
-- install (`bun install`)
-- heroku-prebuild (`bun run heroku-prebuild`)
-- build (`bun run build`)
-- heroku-postbuild (`bun run heroku-postbuild`)
-
-Optionally skip any of these steps with files named `.skip-bun-install`, `.skip-bun-heroku-prebuild`, `.skip-bun-build` or `.skip-bun-heroku-postbuild`.
-
-## Binding to correct port
-
-Bind to `env.PORT` eg
-
-```js
-import { env } from 'process'
-
-const server = Bun.serve({
-  port: env.PORT || 3000,
-  fetch(request) {
-    return new Response(`Welcome to Bun running on Heroku!`)
-  },
-})
-
-console.log(`Listening on localhost:${server.port}`)
+```text
+BUILDPACK_URL=https://github.com/digiz3d/scalingo-buildpack-bun
 ```
 
-## Potential issues
+Pin the buildpack URL to a tag or commit for reproducible deployments.
 
-Use the Issues tab to report any issues.
+The application must contain:
+
+- A `package.json` file with a `start` script.
+- A `.bun-version` file containing an exact version such as `1.4.2`.
+
+A `Procfile` is optional. Without one, the buildpack starts the application with:
+
+```text
+/app/bin/bun run start
+```
+
+## Build
+
+The buildpack:
+
+1. Installs the pinned Bun version into `/app/bin`.
+2. Runs `bun install --frozen-lockfile` with Scalingo's persistent build cache.
+3. Runs `bun run --if-present build`.
+
+Any failed installation or build command fails the deployment.

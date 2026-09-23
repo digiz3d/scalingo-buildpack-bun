@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
-echo "Bun"
+BUILD_DIR=${1:-}
 
+if [[ ! -f "$BUILD_DIR/package.json" || ! -s "$BUILD_DIR/.bun-version" ]]; then
+  exit 1
+fi
+
+echo "Bun"
 exit 0
